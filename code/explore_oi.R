@@ -13,3 +13,4 @@ chicago_data <- data %>%
   filter(substr(data$zip, 1, 3) == "606") %>%
   filter(county==17031) %>%
   mutate(year=2018)
+
