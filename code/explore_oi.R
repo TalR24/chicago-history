@@ -1,8 +1,9 @@
 ## explore_oi.R
 ## Play around with Opportuntiy Insights social capital data by zip code
-## Last edfited 8/24/22 by Tal Roded
+## Last edfited 9/2/22 by Tal Roded
 ##########################################################################
 library(tidyverse)
+library(writexl)
 
 setwd("C:/Users/trode/OneDrive/Desktop/Muth RA/chicago-history/data")
 
@@ -19,14 +20,20 @@ chicago_data <- data %>%
 
 
 ## now bring in IPUMS NHGIS population and demographics data
-demographic_data <- read.csv("nhgis_pop_demographics.csv")
+demographic_data <- read.csv("nhgis_pop_demographics_1990_2020.csv", header = T)
 
-demographic_data$ZCTAA <- as.character(demographic_data$ZCTAA)
-
-demographic_data <- demographic_data %>%
+demographic_data_clean <- demographic_data %>%
   rename_with(tolower) %>%
   filter(substr(zctaa, 1, 3) == "606") %>%
-  filter(datayear==2000 | datayear==2010) %>%
-  rename(zipcode=zctaa, total_pop=cl8aa, white=cn3aa, black=cn3ab, native=cn3ac, asian=cn3ad, 
-         pacific_islander=cn3ae, other_race=cn3af, two_plus_races=cn3ag) %>%
-  select(datayear, zipcode, total_pop, white, black, native, asian, pacific_islander, other_race, two_plus_races)
+  rename(zipcode=zctaa, white=cm1aa, black=cm1ab, native=cm1ac, asian=cm1ad, 
+         pacific_islander=cm1ae, other_race=cm1af, two_plus_races=cm1ag) %>%
+  select(datayear, zipcode, white, black, native, asian, pacific_islander, other_race, two_plus_races) %>% 
+  slice(-1) %>%
+  mutate_if(is.character, as.numeric) %>%
+  rowwise() %>%
+  mutate(total_pop=sum(c_across(white:two_plus_races), na.rm=T)) %>%
+  mutate(across(white:two_plus_races, ~ 100*.x/total_pop, .names="prop_{.col}")) %>%
+  mutate(across(prop_white:prop_two_plus_races, round))
+
+write_xlsx(demographic_data_clean, 'chicago_demographic_pops_1990_2020.xlsx')
+         
