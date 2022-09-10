@@ -57,7 +57,8 @@ demographic_data_clean %>%
   ggplot() + 
   geom_bar(aes(x=reorder(zip, prop_black), y=prop_black), 
            stat='identity', position='dodge') + 
-  theme_fivet
+  theme_fivethirtyeight() + 
+  title(main="2020 Black Population Proportions - Chicago Zip Codes")
 
 ##########################################
 ## Merge datasets and look at spatial correlations
