@@ -1,7 +1,7 @@
 ## explore_oi.R
 ## Import and clean both Opportuntiy Insights social capital data 
 ##  and IPUMS NHGIS racial demographic data by zip code
-## Last edfited 9/2/22 by Tal Roded
+## Last edfited 9/15/22 by Tal Roded
 ##########################################################################
 library(tidyverse)
 library(writexl)
@@ -46,19 +46,21 @@ demographic_data_clean$zip <- as.character(demographic_data_clean$zip)
 # export to excel to share with RA team
 #write_xlsx(demographic_data_clean, 'chicago_demographic_pops_1990_2020.xlsx')
 
-dem_trends <- demographic_data_clean %>%
+dem_trends <- demographic_data_clean %>% 
   group_by(zip) %>%
-  sort(datayear) %>%
+  arrange(datayear) %>%
   mutate(across(white:two_plus_races, ~ 100*(.x-.x[1])/.x[1], .names="growth_rate_{.col}"))
 
 demographic_data_clean$datayear <- as.character(demographic_data_clean$datayear)
+
+
 demographic_data_clean %>%
   filter(datayear=="2020") %>%
   ggplot() + 
   geom_bar(aes(x=reorder(zip, prop_black), y=prop_black), 
            stat='identity', position='dodge') + 
   theme_fivethirtyeight() + 
-  title(main="2020 Black Population Proportions - Chicago Zip Codes")
+  labs(title="2020 Black Population Proportions - Chicago Zip Codes")
 
 ##########################################
 ## Merge datasets and look at spatial correlations
