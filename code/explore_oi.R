@@ -8,12 +8,12 @@ library(writexl)
 library(ggthemes)
 library(zipcodeR)
 
-setwd("C:/Users/trode/OneDrive/Desktop/Muth RA/chicago-history/data")
+setwd("C:/Users/trode/OneDrive/Desktop/Muth RA/chicago-history")
 
 ##########################################
 ## Opportunity Insights Data
 ##########################################
-opp_ins_data <- read.csv("social_capital_zip.csv")
+opp_ins_data <- read.csv("data/social_capital_zip.csv")
 
 opp_ins_data$zip <- as.character(opp_ins_data$zip)
 
@@ -27,7 +27,7 @@ chicago_data <- opp_ins_data %>%
 ## IPUMS NHGIS Demographic 1990-2020 Data
 ##########################################
 ## now bring in IPUMS NHGIS population and demographics data
-demographic_data <- read.csv("nhgis_pop_demographics_1990_2020.csv", header = T)
+demographic_data <- read.csv("data/nhgis_pop_demographics_1990_2020.csv", header = T)
 
 demographic_data_clean <- demographic_data %>%
   rename_with(tolower) %>%
@@ -87,26 +87,45 @@ mobility_minority_2020 <- chicago_combined %>%
   #take log of this measure
   mutate(prop_black=log(prop_black))
 
-ggplot(mobility_minority_2020, aes(x=prop_black, y=prop_below_p50)) + 
+p <- ggplot(mobility_minority_2020, aes(x=prop_black, y=prop_below_p50)) + 
   geom_point() + 
   geom_smooth(method=lm, se=FALSE) + 
   theme_fivethirtyeight() + 
   theme(axis.title = element_text(size=12, face="bold"),
-        plot.title = element_text(hjust=0.5)) + 
+        plot.title = element_text(hjust=0.5),
+        axis.text.x = element_blank()) + 
   labs(title="Mobility-Black Proportion by Zip Code", 
        x="Log(% Black)", y="% Below P50") + 
   theme(panel.border = element_rect(color="black", fill=NA, size=1, linetype="solid"))
+p
 ggsave("charts/income-percentile_black_scatter.png", plot = p, 
        width = 20, height = 16, units = "cm", dpi=600)
 
-ggplot(mobility_minority_2020, aes(x=prop_black, y=ec_zip)) + 
+p <- ggplot(mobility_minority_2020, aes(x=prop_black, y=ec_zip)) + 
   geom_point() + 
   geom_smooth(method=lm, se=FALSE) + 
   theme_fivethirtyeight() + 
   theme(axis.title = element_text(size=12, face="bold"),
-        plot.title = element_text(hjust=0.5)) + 
+        plot.title = element_text(hjust=0.5),
+        axis.text.x = element_blank()) + 
   labs(title="Mobility-Black Proportion by Zip Code", 
        x="Log(% Black)", y="Economic Connectedness") + 
   theme(panel.border = element_rect(color="black", fill=NA, size=1, linetype="solid"))
+p
 ggsave("charts/econ-connect_black_scatter.png", plot = p, 
+       width = 20, height = 16, units = "cm", dpi=600)
+
+
+p <- ggplot(mobility_minority_2020, aes(x=prop_black, y=volunteering_rate_zip)) + 
+  geom_point() + 
+  geom_smooth(method=lm, se=FALSE) + 
+  theme_fivethirtyeight() + 
+  theme(axis.title = element_text(size=12, face="bold"),
+        plot.title = element_text(hjust=0.5),
+        axis.text.x = element_blank()) + 
+  labs(title="Mobility-Black Proportion by Zip Code", 
+       x="Log(% Black)", y="Volunteering Rate") + 
+  theme(panel.border = element_rect(color="black", fill=NA, size=1, linetype="solid"))
+p
+ggsave("charts/volunteer-rate_black_scatter.png", plot = p, 
        width = 20, height = 16, units = "cm", dpi=600)
