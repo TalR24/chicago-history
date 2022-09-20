@@ -1,11 +1,12 @@
 ## explore_oi.R
 ## Import and clean both Opportuntiy Insights social capital data 
 ##  and IPUMS NHGIS racial demographic data by zip code
-## Last edfited 9/15/22 by Tal Roded
+## Last edfited 9/20/22 by Tal Roded
 ##########################################################################
 library(tidyverse)
 library(writexl)
 library(ggthemes)
+library(zipcodeR)
 
 setwd("C:/Users/trode/OneDrive/Desktop/Muth RA/chicago-history/data")
 
@@ -54,16 +55,58 @@ dem_trends <- demographic_data_clean %>%
 demographic_data_clean$datayear <- as.character(demographic_data_clean$datayear)
 
 
+
+
 demographic_data_clean %>%
   filter(datayear=="2020") %>%
   ggplot() + 
   geom_bar(aes(x=reorder(zip, prop_black), y=prop_black), 
            stat='identity', position='dodge') + 
   theme_fivethirtyeight() + 
-  labs(title="2020 Black Population Proportions - Chicago Zip Codes")
+  labs(title="2020 Black Population Proportions, Chicago Zip Codes") + 
+  theme(axis.text.x = element_blank(), 
+        panel.grid.major.x = element_blank()) + 
+  theme(plot.title = element_text(size=16, hjust=0.8)) + 
+  scale_y_continuous(labels=paste0(seq(0,100, 20), "%"), 
+                     breaks=seq(0,100, 20))
+  
 
 ##########################################
 ## Merge datasets and look at spatial correlations
 ##########################################
+# inner join Opportunity Insights data and IPUMS demographic data
 chicago_combined <- chicago_data %>%
   inner_join(demographic_data_clean, by="zip")
+
+# what is the correlation between minority proportion and economic mobility in 2020
+mobility_minority_2020 <- chicago_combined %>%
+  filter(datayear=="2020") %>%
+  # convert number below 50th percentile variable to a proportion
+  mutate(prop_below_p50=100*num_below_p50/pop2018) %>%
+  # distribution of black population follows exponential shape 
+  #take log of this measure
+  mutate(prop_black=log(prop_black))
+
+ggplot(mobility_minority_2020, aes(x=prop_black, y=prop_below_p50)) + 
+  geom_point() + 
+  geom_smooth(method=lm, se=FALSE) + 
+  theme_fivethirtyeight() + 
+  theme(axis.title = element_text(size=12, face="bold"),
+        plot.title = element_text(hjust=0.5)) + 
+  labs(title="Mobility-Black Proportion by Zip Code", 
+       x="Log(% Black)", y="% Below P50") + 
+  theme(panel.border = element_rect(color="black", fill=NA, size=1, linetype="solid"))
+ggsave("charts/income-percentile_black_scatter.png", plot = p, 
+       width = 20, height = 16, units = "cm", dpi=600)
+
+ggplot(mobility_minority_2020, aes(x=prop_black, y=ec_zip)) + 
+  geom_point() + 
+  geom_smooth(method=lm, se=FALSE) + 
+  theme_fivethirtyeight() + 
+  theme(axis.title = element_text(size=12, face="bold"),
+        plot.title = element_text(hjust=0.5)) + 
+  labs(title="Mobility-Black Proportion by Zip Code", 
+       x="Log(% Black)", y="Economic Connectedness") + 
+  theme(panel.border = element_rect(color="black", fill=NA, size=1, linetype="solid"))
+ggsave("charts/econ-connect_black_scatter.png", plot = p, 
+       width = 20, height = 16, units = "cm", dpi=600)
