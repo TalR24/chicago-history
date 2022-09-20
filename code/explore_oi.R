@@ -87,45 +87,48 @@ mobility_minority_2020 <- chicago_combined %>%
   #take log of this measure
   mutate(prop_black=log(prop_black))
 
+theme_settings <-   theme(axis.title = element_text(size=16, face="bold"),
+                          plot.subtitle = element_text(size=16, hjust=0.5, face="italic"),
+                          plot.title = element_text(size=20, hjust=0.5),
+                          axis.text.x = element_blank(), 
+                          axis.text.y = element_text(size=14))
+
 p <- ggplot(mobility_minority_2020, aes(x=prop_black, y=prop_below_p50)) + 
   geom_point() + 
   geom_smooth(method=lm, se=FALSE) + 
   theme_fivethirtyeight() + 
-  theme(axis.title = element_text(size=12, face="bold"),
-        plot.title = element_text(hjust=0.5),
-        axis.text.x = element_blank()) + 
+  theme_settings + 
   labs(title="Mobility-Black Proportion by Zip Code", 
+       subtitle="Blue Line = Simple Linear Fit",
        x="Log(% Black)", y="% Below P50") + 
   theme(panel.border = element_rect(color="black", fill=NA, size=1, linetype="solid"))
 p
 ggsave("charts/income-percentile_black_scatter.png", plot = p, 
-       width = 20, height = 16, units = "cm", dpi=600)
+       width = 7.5, height = 5, units = "in", dpi=600)
 
 p <- ggplot(mobility_minority_2020, aes(x=prop_black, y=ec_zip)) + 
   geom_point() + 
   geom_smooth(method=lm, se=FALSE) + 
   theme_fivethirtyeight() + 
-  theme(axis.title = element_text(size=12, face="bold"),
-        plot.title = element_text(hjust=0.5),
-        axis.text.x = element_blank()) + 
+  theme_settings + 
   labs(title="Mobility-Black Proportion by Zip Code", 
+       subtitle="Blue Line = Simple Linear Fit",
        x="Log(% Black)", y="Economic Connectedness") + 
   theme(panel.border = element_rect(color="black", fill=NA, size=1, linetype="solid"))
 p
 ggsave("charts/econ-connect_black_scatter.png", plot = p, 
-       width = 20, height = 16, units = "cm", dpi=600)
+       width = 7.5, height = 5, units = "in", dpi=600)
 
 
 p <- ggplot(mobility_minority_2020, aes(x=prop_black, y=volunteering_rate_zip)) + 
   geom_point() + 
   geom_smooth(method=lm, se=FALSE) + 
   theme_fivethirtyeight() + 
-  theme(axis.title = element_text(size=12, face="bold"),
-        plot.title = element_text(hjust=0.5),
-        axis.text.x = element_blank()) + 
+  theme_settings + 
   labs(title="Mobility-Black Proportion by Zip Code", 
+       subtitle="Blue Line = Simple Linear Fit",
        x="Log(% Black)", y="Volunteering Rate") + 
   theme(panel.border = element_rect(color="black", fill=NA, size=1, linetype="solid"))
 p
 ggsave("charts/volunteer-rate_black_scatter.png", plot = p, 
-       width = 20, height = 16, units = "cm", dpi=600)
+       width = 7.5, height = 5, units = "in", dpi=600)
