@@ -43,17 +43,7 @@ demographic_data_clean <- demographic_data %>%
   mutate(across(prop_white:prop_two_plus_races, round))
 
 demographic_data_clean$zip <- as.character(demographic_data_clean$zip)
-
-# export to excel to share with RA team
-#write_xlsx(demographic_data_clean, 'chicago_demographic_pops_1990_2020.xlsx')
-
-dem_trends <- demographic_data_clean %>% 
-  group_by(zip) %>%
-  arrange(datayear) %>%
-  mutate(across(white:two_plus_races, ~ 100*(.x-.x[1])/.x[1], .names="growth_rate_{.col}"))
-
 demographic_data_clean$datayear <- as.character(demographic_data_clean$datayear)
-
 
 ## Compare black population distributions (count, prop) across zip codes
 # raw counts in 2020
@@ -105,7 +95,32 @@ p <- demographic_data_clean %>%
 p
 ggsave("charts/1990_black_pop_prop_dist.png", plot = p, 
        width = 7.5, height = 5, units = "in", dpi=600)
-  
+
+# export to excel to share with RA team
+#write_xlsx(demographic_data_clean, 'chicago_demographic_pops_1990_2020.xlsx')
+
+dem_trends <- demographic_data_clean %>% 
+  group_by(zip) %>%
+  arrange(datayear) %>%
+  mutate(across(white:two_plus_races, ~ 100*(.x-lag(.x, n=3))/lag(.x, n=3), .names="growth_rate_{.col}")) %>%
+  filter(growth_rate_black<500)
+
+# population count changes 1990-2020
+p <- dem_trends %>%
+  filter(datayear=="2020") %>%
+  ggplot() + 
+  geom_bar(aes(x=reorder(zip, growth_rate_black), y=growth_rate_black), 
+           stat='identity', position='dodge') + 
+  theme_fivethirtyeight() + 
+  labs(title="Black Population Changes 1990-2020, Chicago Zip Codes") + 
+  theme(axis.text.x = element_blank(), 
+        panel.grid.major.x = element_blank()) + 
+  theme(plot.title = element_text(size=16, hjust=0.8)) + 
+  scale_y_continuous(labels=paste0(seq(-100,500, 100), "%"), 
+                     breaks=seq(-100,500, 100), limits=c(-100,500))
+p
+ggsave("charts/black_pop_trends_1990_2020.png", plot = p, 
+       width = 7.5, height = 5, units = "in", dpi=600)
 
 ##########################################
 ## Merge datasets and look at spatial correlations
