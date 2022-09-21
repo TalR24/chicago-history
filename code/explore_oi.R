@@ -1,12 +1,12 @@
 ## explore_oi.R
 ## Import and clean both Opportuntiy Insights social capital data 
 ##  and IPUMS NHGIS racial demographic data by zip code
-## Last edfited 9/20/22 by Tal Roded
+## Last edfited 9/21/22 by Tal Roded
 ##########################################################################
 library(tidyverse)
 library(writexl)
 library(ggthemes)
-library(zipcodeR)
+library(scales)
 
 setwd("C:/Users/trode/OneDrive/Desktop/Muth RA/chicago-history")
 
@@ -55,9 +55,25 @@ dem_trends <- demographic_data_clean %>%
 demographic_data_clean$datayear <- as.character(demographic_data_clean$datayear)
 
 
+## Compare black population distributions (count, prop) across zip codes
+# raw counts in 2020
+p <- demographic_data_clean %>%
+  filter(datayear=="2020") %>%
+  ggplot() + 
+  geom_bar(aes(x=reorder(zip, black), y=black), 
+           stat='identity', position='dodge') + 
+  theme_fivethirtyeight() + 
+  labs(title="2020 Black Population Counts, Chicago Zip Codes") + 
+  theme(axis.text.x = element_blank(), 
+        panel.grid.major.x = element_blank()) + 
+  theme(plot.title = element_text(size=16, hjust=0.8)) + 
+  scale_y_continuous(label=comma)
+p
+ggsave("charts/black_pop_counts_dist.png", plot = p, 
+       width = 7.5, height = 5, units = "in", dpi=600)
 
-
-demographic_data_clean %>%
+# proportions in 2020
+p <- demographic_data_clean %>%
   filter(datayear=="2020") %>%
   ggplot() + 
   geom_bar(aes(x=reorder(zip, prop_black), y=prop_black), 
@@ -68,7 +84,27 @@ demographic_data_clean %>%
         panel.grid.major.x = element_blank()) + 
   theme(plot.title = element_text(size=16, hjust=0.8)) + 
   scale_y_continuous(labels=paste0(seq(0,100, 20), "%"), 
+                     breaks=seq(0,100, 20), limits=c(0,100))
+p
+ggsave("charts/black_pop_prop_dist.png", plot = p, 
+       width = 7.5, height = 5, units = "in", dpi=600)
+
+# proportions in 1990
+p <- demographic_data_clean %>%
+  filter(datayear=="1990") %>%
+  ggplot() + 
+  geom_bar(aes(x=reorder(zip, prop_black), y=prop_black), 
+           stat='identity', position='dodge') + 
+  theme_fivethirtyeight() + 
+  labs(title="1990 Black Population Proportions, Chicago Zip Codes") + 
+  theme(axis.text.x = element_blank(), 
+        panel.grid.major.x = element_blank()) + 
+  theme(plot.title = element_text(size=16, hjust=0.8)) + 
+  scale_y_continuous(labels=paste0(seq(0,100, 20), "%"), 
                      breaks=seq(0,100, 20))
+p
+ggsave("charts/1990_black_pop_prop_dist.png", plot = p, 
+       width = 7.5, height = 5, units = "in", dpi=600)
   
 
 ##########################################
